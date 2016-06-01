@@ -28,6 +28,9 @@
 
 package org.opennms.features.topology.app.internal.operations;
 
+import static org.opennms.features.topology.api.support.VertexHopGraphProvider.VertexHopCriteria;
+
+import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +44,7 @@ import org.opennms.features.topology.api.support.VertexHopGraphProvider.DefaultV
 import org.opennms.features.topology.api.topo.GraphProvider;
 import org.opennms.features.topology.api.topo.MetaTopologyProvider;
 import org.opennms.features.topology.api.topo.VertexRef;
+import org.opennms.features.topology.app.internal.ui.info.breadcrumbs.BreadcrumbCriteria;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,16 +82,25 @@ public class NavigateToOperation implements Constants, Operation {
             LOG.warn("No graph provider found for namespace '{}'.", targetNamespace);
             return;
         }
-
+        // TODO Consolidate this with the "BreadcrumbInfoPanelItemProvider" as it manually defines the navigateTo
+        // Get the Breadcrumb (before) navigating, otherwise it is lost
+        BreadcrumbCriteria breadcrumbCriteria = VertexHopCriteria.getSingleCriteriaForGraphContainer(graphContainer, BreadcrumbCriteria.class, true);
         operationContext.getGraphContainer().selectTopologyProvider(targetGraphProvider, false);
 
         // TODO: Consolidate that this is configurable and we can define a default SZL and default Focus per layer
         // TODO: Use a default SZL per graph?
         graphContainer.clearCriteria(); // Remove all criteria
         graphContainer.setSemanticZoomLevel(1); // Reset the SZL to 1
+        graphContainer.addCriteria(breadcrumbCriteria); // add it again, it was cleared
 
         // Add the target vertices to focus
         targetVertices.stream().forEach(v -> graphContainer.addCriteria(new DefaultVertexHopCriteria(v)));
+
+        // Update Criteria for Breadcrumbs
+        breadcrumbCriteria.setNewRoot(new AbstractMap.SimpleEntry<>(
+                vertexRef.get(),
+                graphContainer.getBaseTopology() /* source GraphProvider */));
+
 
         // Render
         graphContainer.redoLayout();
