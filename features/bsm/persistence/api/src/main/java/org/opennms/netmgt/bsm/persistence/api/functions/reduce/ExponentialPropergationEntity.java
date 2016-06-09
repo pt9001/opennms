@@ -26,15 +26,44 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.netmgt.bsm.service.model.functions.reduce;
+package org.opennms.netmgt.bsm.persistence.api.functions.reduce;
 
-public interface ReduceFunctionVisitor<T> {
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
 
-    T visit(HighestSeverity highestSeverity);
+@Entity
+@DiscriminatorValue(value="exponential-propergation")
+public class ExponentialPropergationEntity extends AbstractReductionFunctionEntity {
 
-    T visit(HighestSeverityAbove highestSeverityAbove);
+    @Column(name="base", nullable=false)
+    private double m_base;
 
-    T visit(Threshold threshold);
+    public ExponentialPropergationEntity() {
+    }
 
-    T visit(ExponentialPropergation exponentialPropergation);
+    public ExponentialPropergationEntity(double base) {
+        setBase(base);
+    }
+
+    public void setBase(double base) {
+        m_base = base;
+    }
+
+    public double getBase() {
+        return m_base;
+    }
+
+    @Override
+    public String toString() {
+        return com.google.common.base.Objects.toStringHelper(this)
+                .add("id", getId())
+                .add("base", m_base)
+                .toString();
+    }
+
+    @Override
+    public <T> T accept(ReductionFunctionEntityVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
 }

@@ -29,11 +29,13 @@
 package org.opennms.netmgt.bsm.test;
 
 import org.opennms.netmgt.bsm.persistence.api.functions.reduce.AbstractReductionFunctionEntity;
+import org.opennms.netmgt.bsm.persistence.api.functions.reduce.ExponentialPropergationEntity;
 import org.opennms.netmgt.bsm.persistence.api.functions.reduce.HighestSeverityAboveEntity;
 import org.opennms.netmgt.bsm.persistence.api.functions.reduce.HighestSeverityEntity;
 import org.opennms.netmgt.bsm.persistence.api.functions.reduce.ReductionFunctionEntityVisitor;
 import org.opennms.netmgt.bsm.persistence.api.functions.reduce.ThresholdEntity;
 import org.opennms.netmgt.bsm.service.model.Status;
+import org.opennms.netmgt.bsm.service.model.functions.reduce.ExponentialPropergation;
 import org.opennms.netmgt.bsm.service.model.functions.reduce.HighestSeverity;
 import org.opennms.netmgt.bsm.service.model.functions.reduce.HighestSeverityAbove;
 import org.opennms.netmgt.bsm.service.model.functions.reduce.ReductionFunction;
@@ -59,6 +61,13 @@ class ReduceFunctionMapper {
         public ReductionFunction visit(ThresholdEntity thresholdEntity) {
             Threshold result = new Threshold();
             result.setThreshold(thresholdEntity.getThreshold());
+            return result;
+        }
+
+        @Override
+        public ReductionFunction visit(ExponentialPropergationEntity exponentialPropergationEntity) {
+            ExponentialPropergation result = new ExponentialPropergation();
+            result.setBase(exponentialPropergationEntity.getBase());
             return result;
         }
     };
